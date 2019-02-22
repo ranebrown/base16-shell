@@ -94,6 +94,7 @@ else
     fi
   fi
   put_template_custom 12 ";7" # cursor (reverse video)
+  printf "\033]12;#4e5ab7\007"
 fi
 
 # clean up
