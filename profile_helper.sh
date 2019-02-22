@@ -6,33 +6,37 @@ elif [ -s $ZSH_NAME ]; then
 fi
 script_dir=$(cd $(dirname $file_name) && pwd)
 
+# shellcheck source=/dev/null
 . $script_dir/realpath/realpath.sh
 
 if [ -f ~/.base16_theme ]; then
   script_name=$(basename "$(realpath ~/.base16_theme)" .sh)
-  echo "export BASE16_THEME=${script_name#*-}"
-  echo ". ~/.base16_theme"
+  export BASE16_THEME=${script_name#*-}
+  # shellcheck source=/dev/null
+  . ~/.base16_theme
 fi
-cat <<'FUNC'
+# shellcheck source=/dev/null
+base16()
+{
+  local script=$BASE16_SHELL/scripts/base16-${1}.sh
+  if [ -f "$script" ]; then
+      . "$script"
+  else
+    script=$BASE16_SHELL/scripts/${1}.sh
+    [ -f "$script" ] && . "$script"
+  fi
+  ln -fs "$script" ~/.base16_theme
+  export BASE16_THEME=${1%.sh}
+  echo -e "if \0041exists('g:colors_name') || g:colors_name != 'base16-$1' || g:colors_name != '$1'\n  try\n    colorscheme base16-$1\n  catch /^Vim\%((\\\a\\+)\)\=:E185/\n    colorscheme $1\n  endtry\nendif" >| ~/.vimrc_background
+}
+
 _base16()
 {
-  local script=$1
-  local theme=$2
-  [ -f $script ] && . $script
-  ln -fs $script ~/.base16_theme
-  export BASE16_THEME=${theme}
-  echo -e "if \0041exists('g:colors_name') || g:colors_name != 'base16-$theme'\n  colorscheme base16-$theme\nendif" >| ~/.vimrc_background
-  if [ -n ${BASE16_SHELL_HOOKS:+s} ] && [ -d "${BASE16_SHELL_HOOKS}" ]; then
-    for hook in $BASE16_SHELL_HOOKS/*; do
-      [ -f "$hook" ] && [ -x "$hook" ] && "$hook"
-    done
-  fi
+    local cur opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    opts=$(cd "$BASE16_SHELL"/scripts && for script in ./*.sh; do tmp=${script#*base16-}; echo "${tmp%.sh}"; done)
+    mapfile -t COMPREPLY < <(compgen -W "$opts" -- "${cur}")
+    return 0
 }
-FUNC
-for script in $script_dir/scripts/base16*.sh; do
-  script_name=${script##*/}
-  script_name=${script_name%.sh}
-  theme=${script_name#*-}
-  func_name="base16_${theme}"
-  echo "alias $func_name=\"_base16 \\\"$script\\\" $theme\""
-done;
+complete -F _base16 base16
