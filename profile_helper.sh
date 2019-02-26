@@ -28,16 +28,32 @@ base16()
   ln -fs "$script" ~/.base16_theme
   export BASE16_THEME=${1%.sh}
 
+  # vim light or dark background
+  BACKGROUND=dark
+  if test "${1#*light}" != "${1}"
+  then
+    BACKGROUND=light
+  else
+    # light themes that don't have *light* in the name
+    LIGHT_THEMES=(cupcake brushtrees cupertino github shapeshifter tomorrow)
+    for i in "${LIGHT_THEMES[@]}"; do
+      if [ "${1}" == "${i}" ]; then
+        BACKGROUND=light
+        break
+      fi
+    done
+  fi
+
   # special colorscheme handling
   if [ "${1}" == "ayu-dark" ]; then
-    echo -e "if \0041exists('g:colors_name') || g:colors_name != 'base16-$1' || g:colors_name != '$1'\n  try\n    colorscheme base16-$1\n  catch /^Vim\%((\\\a\\+)\)\=:E185/\n    let ayucolor=\"dark\"\n    colorscheme ayu\n  endtry\nendif" >| ~/.vimrc_background
+    echo -e "if \0041exists('g:colors_name') || g:colors_name != 'base16-$1' || g:colors_name != '$1'\n  set background=${BACKGROUND}\n  try\n    colorscheme base16-$1\n  catch /^Vim\%((\\\a\\+)\)\=:E185/\n    let ayucolor=\"dark\"\n    colorscheme ayu\n  endtry\nendif" >| ~/.vimrc_background
   elif [ "${1}" == "ayu-mirage" ]; then
-    echo -e "if \0041exists('g:colors_name') || g:colors_name != 'base16-$1' || g:colors_name != '$1'\n  try\n    colorscheme base16-$1\n  catch /^Vim\%((\\\a\\+)\)\=:E185/\n    let ayucolor=\"mirage\"\n    let g:airline_theme=\"ayu_mirage\"\n    colorscheme ayu\n  endtry\nendif" >| ~/.vimrc_background
+    echo -e "if \0041exists('g:colors_name') || g:colors_name != 'base16-$1' || g:colors_name != '$1'\n  set background=${BACKGROUND}\n  try\n    colorscheme base16-$1\n  catch /^Vim\%((\\\a\\+)\)\=:E185/\n    let ayucolor=\"mirage\"\n    let g:airline_theme=\"ayu_mirage\"\n    colorscheme ayu\n  endtry\nendif" >| ~/.vimrc_background
   elif [ "${1}" == "ayu-light" ]; then
-    echo -e "if \0041exists('g:colors_name') || g:colors_name != 'base16-$1' || g:colors_name != '$1'\n  try\n    colorscheme base16-$1\n  catch /^Vim\%((\\\a\\+)\)\=:E185/\n    set background=light\n    let ayucolor=\"light\"\n    colorscheme ayu\n  endtry\nendif" >| ~/.vimrc_background
+    echo -e "if \0041exists('g:colors_name') || g:colors_name != 'base16-$1' || g:colors_name != '$1'\n  set background=${BACKGROUND}\n  try\n    colorscheme base16-$1\n  catch /^Vim\%((\\\a\\+)\)\=:E185/\n    let ayucolor=\"light\"\n    colorscheme ayu\n  endtry\nendif" >| ~/.vimrc_background
   else
     # standard colorschemes
-    echo -e "if \0041exists('g:colors_name') || g:colors_name != 'base16-$1' || g:colors_name != '$1'\n  try\n    colorscheme base16-$1\n  catch /^Vim\%((\\\a\\+)\)\=:E185/\n    colorscheme $1\n  endtry\nendif" >| ~/.vimrc_background
+    echo -e "if \0041exists('g:colors_name') || g:colors_name != 'base16-$1' || g:colors_name != '$1'\n  set background=${BACKGROUND}\n  try\n    colorscheme base16-$1\n  catch /^Vim\%((\\\a\\+)\)\=:E185/\n    colorscheme $1\n  endtry\nendif" >| ~/.vimrc_background
   fi
 }
 
