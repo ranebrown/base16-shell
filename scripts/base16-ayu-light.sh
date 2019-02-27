@@ -84,7 +84,7 @@ if [ -n "$ITERM_SESSION_ID" ]; then
   put_template_custom Pi ffffff # bold color
   put_template_custom Pj f0eee4 # selection color
   put_template_custom Pk fafafa # selected text color
-  put_template_custom Pl fc6773 # cursor
+  put_template_custom Pl 5c6773 # cursor
   put_template_custom Pm fafafa # cursor text
 else
   put_template_var 10 $color_foreground
